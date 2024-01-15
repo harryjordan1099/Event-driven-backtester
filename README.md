@@ -1,2 +1,2 @@
 # Event-driven-backtester
-An even driven backtester in Python
+An event driven backtester in Python
