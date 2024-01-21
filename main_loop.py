@@ -1,12 +1,7 @@
 import time
 import queue
 
-from .events import (
-    MarketEvent,
-    SignalEvent,
-    OrderEvent,
-    FillEvent
-)
+from .events import MarketEvent, SignalEvent, OrderEvent, FillEvent
 
 
 from .data import HistoricCSVDataHandler
@@ -43,4 +38,4 @@ while True:
             elif isinstance(event, FillEvent):
                 portfolio.update_fill(event)
 
-    time.sleep(10*60)
+    time.sleep(10 * 60)
