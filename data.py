@@ -76,37 +76,76 @@ class HistoricCSVDataHandler(DataHandler):
         '''
         comb_index = None
 
-        for s in self.symbol_list:
+        for symbol in self.symbol_list:
             # Load the CSV file indexed by date (date is index_col 0)
-            self.symbol_data[s] = pd.read_csv(
-                #construct path to
-                os.path.join(self.csv_dir, f'{s}.csv'),
+            self.symbol_data[symbol] = pd.read_csv(
+                #construct path to each file
+                os.path.join(self.csv_dir, f'{symbol}.csv'),
                 header=0, index_col=0, parse_dates=True,
                 names = [
                     'datetime', 'open', 'high',
                     'low', 'close', 'adj_close', 'volume'
                 ]
             )
-            self.symbol_data[s].sort_index(inplace=True)
+            self.symbol_data[symbol].sort_index(inplace=True)
 
             # Combine the index to pad forward values
             if comb_index is None:
-                comb_index = self.symbol_data[s].index
+                comb_index = self.symbol_data[symbol].index
             else:
-                comb_index.union(self.symbol_data[s].index)
+                comb_index.union(self.symbol_data[symbol].index)
 
             # Set the latest symbol_data to None
-            self.latest_symbol_data[s] = []
+            self.latest_symbol_data[symbol] = []
 
-        for s in self.symbol_list:
-            self.symbol_data[s] = self.symbol_data[s].reindex(
+        for symbol in self.symbol_list:
+            self.symbol_data[symbol] = self.symbol_data[symbol].reindex(
                 index=comb_index, method='pad'
             )
-            self.symbol_data[s]['returns'] = self.symbol_data[s]['adj_close'].pct_change().dropna()
-            self.symbol_data[s] = self.symbol_data[s].iterrows()
+            self.symbol_data[symbol]['returns'] = self.symbol_data[symbol]['adj_close'].pct_change().dropna()
+            self.symbol_data[symbol] = self.symbol_data[symbol].iterrows()
 
         # Reindex the dataframes
+        for symbol in self.symbol_list:
+            self.symbol_data[symbol] = self.symbol_data[symbol].reindex(index=comb_index, method='pad').iterrows()
+            
+            
+    def _get_new_bar(self, symbol):
+        """
+        Returns the latest bar from the data feed as a tuple of 
+        (symbol, datetime, open, low, high, close, volume).
+        """
+        for raw_bar in self.symbol_data[symbol]:
+            yield tuple([symbol, datetime.datetime.strptime(raw_bar[0], '%Y-%m-%d %H:%M:%S'), 
+                        raw_bar[1][0], raw_bar[1][1], raw_bar[1][2], raw_bar[1][3], raw_bar[1][4]])
+            
+    def get_latest_bars(self, symbol, N=1):
+        """
+        Returns the last N bars from the latest_symbol list,
+        or N-k if less available.
+        """
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print "That symbol is not available in the historical data set."
+        else:
+            return bars_list[-N:] 
+        
+    def update_bars(self):
+        """
+        Pushes the latest bar to the latest_symbol_data structure
+        for all symbols in the symbol list.
+        """
         for s in self.symbol_list:
-            self.symbol_data[s] = self.symbol_data[s].reindex(index=comb_index, method='pad').iterrows()
+            try:
+                bar = self._get_new_bar(s).next()
+            except StopIteration:
+                self.continue_backtest = False
+            else:
+                if bar is not None:
+                    self.latest_symbol_data[s].append(bar)
+        self.events.put(MarketEvent())
+            
+    
 
             
