@@ -84,10 +84,56 @@ class NaivePortfolio(Portfolio):
         holdings["total"] = self.initial_capital
         return holdings
     
-    def calculate_current_holdings(self):
+    def construct_current_holdings(self):
         """
         This constructs the dictionary which will hold the instantaneous 
         value of the portfolio across all symbols.
         """
+        holdings = {symbol:0 for symbol in self.symbol_list}
+        holdings["cash"] = self.initial_capital
+        holdings["commission"] = 0
+        holdings["total"] = self.initial_capital
+        return holdings
     
-    
+    def update_timeindex(self, event):
+        """
+        Adds a new record to the all_positions matrix for the current market
+        data bar. This reflects the PREVIOUS bar, i.e. all current market data 
+        at this stage is known (OHLCVI). 
+        
+        Makes use of a MarketEvent from the events queue.
+        """
+        bars = {
+            symbol: self.bars.get_latest(data, symbol)
+            for symbol in self.symbol_list
+        }
+        
+        # positions 
+        positions = {
+            symbol: self.current_positions[symbol]
+            for symbol in self.symbol_list
+        }
+        
+        # Append the current positions
+        datestamp = bars[self.symbol_list[0]][0][1]
+        positions["datestamp"] = datestamp
+        self.all_positions.append(positions)
+        
+        # Update holdings
+        holdings = {symbol: 0 for symbol in self.symbol_list}
+        holdings['datestamp'] = datestamp
+        holdings['cash'] = self.current_holdings['cash']
+        holdings['commission'] = self.current_holdings['commission']
+        holdings['total'] = self.current_holdings['cash']
+        
+        for symbol in self.symbol_list:
+            # Approximation to real value, this is sufficient for Intraday
+            # trading but not for daily strategies as opening prices can
+            # differ substantially from the closing price
+            market_value = self.current_positions[symbol] * bar[symbol][0][5]
+            holdings[symbol] = market_value
+            holdings["total"] += market_value
+            
+        self.all_holdings.append(holdings)
+        
+            
