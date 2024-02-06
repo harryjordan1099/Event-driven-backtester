@@ -46,10 +46,10 @@ class NaivePortfolio(Portfolio):
         Initialises the portfolio.
         
         Args:
-        - bars (obj) - The DataHandler object with current market data.
-        - events (obj) - The Event Queue object.
-        - start_date - The start date (bar) of the portfolio.
-        - initial_capital (float) - The starting capital in USD
+            bars (obj) - The DataHandler object with current market data.
+            events (obj) - The Event Queue object.
+            start_date - The start date (bar) of the portfolio.
+            initial_capital (float) - The starting capital in USD
         """
         self.bars = bars
         self.events = events
@@ -136,4 +136,62 @@ class NaivePortfolio(Portfolio):
             
         self.all_holdings.append(holdings)
         
+    def update_positions_from_fill(self, fill):
+        """
+        Determines whether a FillEvent is either a Buy
+        or Sell and then updates the current_positions dictionary accordingly by
+        adding/subtracting the correct quantity of shares.
+        
+        Args:
+            fill(obj) - The FillEvent object to update the posiitons with.
+        """
+        # kinda safe, would fail if not "BUY" or "SELL"
+        direction = 1 if event.direction == 'BUY' else -1
+        self.current_positions[event.symbol] += copysign(event.quantity, direction)
+         
+    def update_holdings_from_fill(self, fill):
+        """
+        Determines a FillEvent is either a Buy or Sell ands then updates
+        the current_holdings dictionary 
+        
+        Args:
+            fill (obj) - The FillEvent object to update the posiitons with.
+        """
+        # kinda safe, would fail if not "BUY" or "SELL"
+        direction = 1 if event.direction == 'BUY' else -1
+        
+        # Update holdings list with new quantities.
+        fill_cost = self.bars.get_latest_bars(fill.symbol)[0][5] # Close price
+        cost = fill_dir * fill_cost * fill.quantity
+        self.current_holdings[fill.symbol] += cost
+        self.current_holdings["commission"] += fill.commission
+        self.current_holdings["cash"] -= cost + fill.commission 
+        self.current_holdings["total"] -= cost + fill.commission
+        
+    def update_fill(self, event):
+        """
+        Updates the portfolio current positions and holdings 
+        from a FillEvent.
+        """
+        if event.type == "FILL":
+            self.update_positions_from_fill(event)
+            self.update_holdings_from_fill(event)
             
+    def generate_naive_order(self, signal):
+        """
+        Simply transacts an Orderevent object as a constant quantity 
+        sizing of the signal object (100 shares), without risk management or
+        position sizing considerations. 
+        
+        Args:
+            signal (obj) - The SignalEvent signal information
+        """
+        if isinstance(event, SignalEvent)
+                    direction = 'BUY' if event.signal_type == 'LONG' else 'SELL'
+                    return OrderEvent(
+                        event.symbol,
+                        'MARKET',
+                        100,
+                        direction
+                    )
+                
