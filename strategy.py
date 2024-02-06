@@ -5,7 +5,7 @@ import Queue
 
 from abc import ABCMeta, abstractmethod
 
-from event import SignalEvent
+from event import SignalEvent, MarketEvent
 
 class Strategy():
     
@@ -41,5 +41,23 @@ class BuyAndHoldStrategy(Strategy):
 
         # As soon as the buy and hold signal is given, these are set to True
         # This allows the strategy to know whether it is 'In the market' or not
-        self.bought = self._calculate_initial_bought()
+        self.bought = {symbol: False for symbol in self.symbol_list}
+
+    def calculate_signals(self, event):
+        '''
+        For 'Buy and Hold', we generate a single signal for each symbol
+        to buy and thats it. Therefore we are constantly long from the date
+        of strategy initialisation.
+
+        Args:
+            event(obj) - a MarketEvent object.
+        '''
+        if isinstance(event, MarketEvent):
+            for symbol in self.symbol_list:
+                bars = self.bars.get_latest_bars(symbol)[0]
+                if bars is not None and len(bars) > 0:
+                    signal = SignalEvent(symbol, bars[1], 'LONG')
+                    self.events.put(signal)
+                    self.bought[symbol] = True
+
         
