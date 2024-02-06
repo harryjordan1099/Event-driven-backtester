@@ -194,4 +194,22 @@ class NaivePortfolio(Portfolio):
                         100,
                         direction
                     )
-                
+    def update_signal(self, event):
+        """
+        Acts on a SignalEvent to generate new orders based on the portfolio
+        logic.
+        """
+        if isinstance(event, SignalEvent):
+            self.event_queue.put(self.create_order_event(event))
+            
+    def create_equity_curve_dataframe(self):
+        """
+        Creates an equity curve from the all_holdings 
+        list of dictionaries.
+        """
+        curve = pd.dataFrame(self.all_holdings)
+        curve.set_index('datetime', inplace=True)
+        curve['returns'] = curve['total'].pct_change()
+        curve['equity_curve'] = (1.0 + curve['returns']).cumprod()
+        self.equity_curve = curve
+        
