@@ -45,3 +45,22 @@ class SimulatedExecutionHandler(ExecutionHandler):
     sophisticated execution handler.
     """
     
+    def __init__(self, events):
+        """
+        Initialises the handler
+        """
+        self.events
+        
+    def execute_order(self, event):
+        """
+        Simply converts Order objects into fill objects 
+        without latency, slippage or fill ratio problems. 
+        
+        Args:
+            event (obj) - Contains an event object with order information.
+        """
+        if isinstance(event, OrderEvent):
+            fill_event = FillEvent(datetime.datetime.utcnow(), event.symbol,
+                                   "ARCA", event.quantity, event.direction, None)
+            self.events.put(fill_event)
+    
