@@ -8,7 +8,7 @@ from event import FillEvent, OrderEvent
 class ExecutionHandler():
     """
     The ExecutionHandler abstract class takes in the OrderEvenbts generated 
-    by the portfolio and the ultimate set of Fill objects thata ctually occur 
+    by the portfolio and the ultimate set of Fill objects that actually occur 
     in the market.
     
     This abstract class allows for both simulated brokerages and live brokerages to
@@ -36,7 +36,12 @@ class SimulatedExecutionHandler(ExecutionHandler):
     objects into their equivalent fill objects automatically.
     
     This is unrealistic as this doesnt take into account:
-        - 
+        - Latency (the time taken between a order being placed and its execution, which effects slippage)
+        - Slippage (difference between the expected price of a trade 
+        and the price which the trade is executed)
+        - Fill-ratio issues (How much of an order is filled, poor ratios lead to slippage)
         
+    This is useful for a "first go" test of any strategy before implementation using a more
+    sophisticated execution handler.
     """
-        
+    
