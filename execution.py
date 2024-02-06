@@ -60,6 +60,8 @@ class SimulatedExecutionHandler(ExecutionHandler):
             event (obj) - Contains an event object with order information.
         """
         if isinstance(event, OrderEvent):
+            # This currently uses the ARCA exchange as a placeholder, 
+            # In a live executuion environment this becomes more important 
             fill_event = FillEvent(datetime.datetime.utcnow(), event.symbol,
                                    "ARCA", event.quantity, event.direction, None)
             self.events.put(fill_event)
