@@ -8,6 +8,8 @@ from math import floor
 
 from event import FillEvent, OrderEvent
 
+from performance import create_sharpe_ratio, create_drawdowns
+
 class Portfolio():
     """
     The Portfolio abstract class acts on signals from the SignalEvent 
@@ -213,3 +215,21 @@ class NaivePortfolio(Portfolio):
         curve['equity_curve'] = (1.0 + curve['returns']).cumprod()
         self.equity_curve = curve
         
+    def output_summary_stats(self):
+        """
+        Creates a list of summary statistics for the portfolio such as 
+        Sharpe Ratio and drawdown information.
+        """
+        total_return = self.equity_curve["equity_curve"][-1]
+        returns = self.equity_curve['returns']
+        pnl = self.equity_curve["equity_curve"]
+        
+        sharpe_ratio = create_sharpe_ratio(returns)
+        max_dd, dd_duration = create_drawdowns(pnl)
+        
+        stats = [("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0))
+                 ("Sharpe Ratio", "%0.2f" % sharpe_ratio),
+                 ("Max Drawdown", "%0.2f%%" % (max_dd * 100.0)),
+                 ("Drawdown Duration", "%d" % dd_duration)]
+        
+        return stats
