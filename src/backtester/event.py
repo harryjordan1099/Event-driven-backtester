@@ -77,7 +77,7 @@ class OrderEvent(Event):
 
 class FillEvent(Event):
     '''
-    Represents the Filler Order, which stores the quantity of an instrument
+    Represents the Fill Order, which stores the quantity of an instrument
     actually filled and at what price as well as the commission of the trade from the brokerage. 
     '''
 
@@ -108,7 +108,7 @@ class FillEvent(Event):
         self.fill_cost = fill_cost
 
         if commission is None:
-            self.commision = self.calculate_ib_commission()
+            self.commision = self.calculate_ib_commission()-
         else:
             self.commision = commission
         

@@ -4,7 +4,7 @@ import pandas as pd
 
 from abc import ABCMeta, abstractmethod
 
-from event import MarketEvent
+from backtester.event import MarketEvent
 
 class DataHandler(object):
     '''

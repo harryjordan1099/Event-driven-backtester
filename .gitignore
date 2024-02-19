@@ -1,4 +1,23 @@
 # Ignore hidden files
-.*
-*.ipynb
 __pycache__
+*.egg-info/
+
+.ipynb_checkpoints
+*.ipynb
+*.Rmd
+
+*.html
+
+*.csv
+*.gz
+*.json
+*.png
+*.txt
+*.pdf
+*.docx
+*.dat
+*.msg
+*.xls
+*.log
+*.ppt
+*.zip
