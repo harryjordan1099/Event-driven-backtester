@@ -1,0 +1,4 @@
+# Ignore hidden files
+.*
+*.ipynb
+__pycache__
