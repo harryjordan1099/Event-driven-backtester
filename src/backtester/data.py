@@ -67,7 +67,9 @@ class HistoricCSVDataHandler(DataHandler):
         self.symbol_list = symbol_list
 
         self.symbol_data = {}
+        self.symbol_dataframe = {}
         self.latest_symbol_data = {}
+        self.all_data = {}
         self.continue_backtest = True
 
         self._open_convert_csv_files()
@@ -81,50 +83,34 @@ class HistoricCSVDataHandler(DataHandler):
         '''
         combined_index = None
         
-        
-
-#         for symbol in self.symbol_list:
-#             # Load the CSV file indexed by date (date is index_col 0)
-#             self.symbol_data[symbol] = pd.read_csv(
-#                 #construct path to each file
-#                 os.path.join(self.csv_dir, f'{symbol}.csv'),
-#                 header=0, index_col=0, parse_dates=True,
-#                 names = [
-#                     'datetime', 'open', 'high',
-#                     'low', 'close', 'adj_close', 'volume'
-#                 ]
-#             )
-#             self.symbol_data[symbol].sort_index(inplace=True)
-
-#             # Combine the index to pad forward values
-#             if comb_index is None:
-#                 comb_index = self.symbol_data[symbol].index
-#             else:
-#                 comb_index.union(self.symbol_data[symbol].index)
-
-#             # Set the latest symbol_data to None
-#             self.latest_symbol_data[symbol] = []
-
         for symbol in self.symbol_list:
-            self.symbol_data[symbol] = self.symbol_data[symbol].reindex(
-                index=comb_index, method='pad'
-            )
-            self.symbol_data[symbol]['returns'] = self.symbol_data[symbol]['adj_close'].pct_change().dropna()
-            self.symbol_data[symbol] = self.symbol_data[symbol].iterrows()
-
-        # Reindex the dataframes
+            # Load the CSV file indexed by date (date is index_col 0)
+            # construct path to each file
+            self.symbol_data[symbol] = pd.read_csv(os.path.join(self.csv_dir, symbol + ".csv"), 
+                                                   header = 0, 
+                                                   index_col = 0, 
+                                                   parse_dates=True)
+            
+            # Combine the index to pad forward values
+            if combined_index is None:
+                combined_index = self.symbol_data[symbol].index
+            else:
+                combined_index.union(self.symbol_data[symbol].index)
+                
+            self.latest_symbol_data[symbol] = []
+            
         for symbol in self.symbol_list:
-            self.symbol_data[symbol] = self.symbol_data[symbol].reindex(index=comb_index, method='pad').iterrows()
+            self.symbol_dataframe[symbol] = self.symbol_data[symbol].reindex(index=combined_index, method="pad")
+            self.all_data[symbol] = self.symbol_dataframe[symbol].copy()
+            self.symbol_data[symbol] = self.symbol_dataframe[symbol].iterrows()
             
             
     def _get_new_bar(self, symbol):
         """
-        Returns the latest bar from the data feed as a tuple of 
-        (symbol, datetime, open, low, high, close, volume).
+        Returns the latest bar from the data feed as a tuple.
         """
         for raw_bar in self.symbol_data[symbol]:
-            yield tuple([symbol, datetime.datetime.strptime(raw_bar[0], '%Y-%m-%d %H:%M:%S'), 
-                        raw_bar[1][0], raw_bar[1][1], raw_bar[1][2], raw_bar[1][3], raw_bar[1][4]])
+            yield tuple([symbol, raw_bar[0], raw_bar[1][0]])
             
     def get_latest_bars(self, symbol, N=1):
         """
