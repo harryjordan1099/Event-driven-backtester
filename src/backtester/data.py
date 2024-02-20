@@ -1,11 +1,15 @@
+# %%
 import datetime
 import os, os.path 
 import pandas as pd
 
+# %%
 from abc import ABCMeta, abstractmethod
 
+# %%
 from backtester.event import MarketEvent
 
+# %%
 class DataHandler(object):
     '''
     DataHandler is a abstract base class which provides and interface
@@ -38,7 +42,8 @@ class DataHandler(object):
         Pushes the latest bar to the latestes symbol structure for all symbols in the symbol list
         '''
         raise NotImplementedError('DataHandler child must implement a update_bars()')
-    
+
+# %%
 class HistoricCSVDataHandler(DataHandler):
     '''
     The HistoricCSVDataHandler is used to read a CSV for each requested symbol
@@ -74,29 +79,31 @@ class HistoricCSVDataHandler(DataHandler):
 
         (Assumes data is from Yahoo)
         '''
-        comb_index = None
+        combined_index = None
+        
+        
 
-        for symbol in self.symbol_list:
-            # Load the CSV file indexed by date (date is index_col 0)
-            self.symbol_data[symbol] = pd.read_csv(
-                #construct path to each file
-                os.path.join(self.csv_dir, f'{symbol}.csv'),
-                header=0, index_col=0, parse_dates=True,
-                names = [
-                    'datetime', 'open', 'high',
-                    'low', 'close', 'adj_close', 'volume'
-                ]
-            )
-            self.symbol_data[symbol].sort_index(inplace=True)
+#         for symbol in self.symbol_list:
+#             # Load the CSV file indexed by date (date is index_col 0)
+#             self.symbol_data[symbol] = pd.read_csv(
+#                 #construct path to each file
+#                 os.path.join(self.csv_dir, f'{symbol}.csv'),
+#                 header=0, index_col=0, parse_dates=True,
+#                 names = [
+#                     'datetime', 'open', 'high',
+#                     'low', 'close', 'adj_close', 'volume'
+#                 ]
+#             )
+#             self.symbol_data[symbol].sort_index(inplace=True)
 
-            # Combine the index to pad forward values
-            if comb_index is None:
-                comb_index = self.symbol_data[symbol].index
-            else:
-                comb_index.union(self.symbol_data[symbol].index)
+#             # Combine the index to pad forward values
+#             if comb_index is None:
+#                 comb_index = self.symbol_data[symbol].index
+#             else:
+#                 comb_index.union(self.symbol_data[symbol].index)
 
-            # Set the latest symbol_data to None
-            self.latest_symbol_data[symbol] = []
+#             # Set the latest symbol_data to None
+#             self.latest_symbol_data[symbol] = []
 
         for symbol in self.symbol_list:
             self.symbol_data[symbol] = self.symbol_data[symbol].reindex(
@@ -145,7 +152,9 @@ class HistoricCSVDataHandler(DataHandler):
                 if bar is not None:
                     self.latest_symbol_data[s].append(bar)
         self.events.put(MarketEvent())
-            
+
+# %%
     
 
+# %%
             

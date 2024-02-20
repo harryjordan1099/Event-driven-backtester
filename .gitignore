@@ -8,7 +8,6 @@ __pycache__
 *.html
 *.DS_store
 
-*.csv
 *.gz
 *.json
 *.png
