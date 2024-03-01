@@ -105,38 +105,37 @@ class HistoricCSVDataHandler(DataHandler):
             self.symbol_data[symbol] = self.symbol_dataframe[symbol].iterrows()
             
             
-    def _get_new_bar(self, symbol):
+    def _get_new_data(self, symbol):
         """
         Returns the latest bar from the data feed as a tuple.
         """
         for raw_bar in self.symbol_data[symbol]:
             yield tuple([symbol, raw_bar[0], raw_bar[1][0]])
             
-    def get_latest_bars(self, symbol, N=1):
+    def get_latest_data(self, symbol, N=1):
         """
         Returns the last N bars from the latest_symbol list,
         or N-k if less available.
         """
         try:
-            bars_list = self.latest_symbol_data[symbol]
+            return self.latest_symbol_data[symbol][-N:]
         except KeyError:
-            print ("That symbol is not available in the historical data set.")
-        else:
-            return bars_list[-N:] 
+            print (f"{symbol} is not available in the historical data set.")
+
         
-    def update_bars(self):
+    def update_latest_data(self):
         """
         Pushes the latest bar to the latest_symbol_data structure
         for all symbols in the symbol list.
         """
-        for s in self.symbol_list:
+        for symbol in self.symbol_list:
+            data = None
             try:
-                bar = self._get_new_bar(s).next()
+                data = next(self._get_new_data(symbol))
             except StopIteration:
                 self.continue_backtest = False
-            else:
-                if bar is not None:
-                    self.latest_symbol_data[s].append(bar)
+            if data is not None:
+                self.latest_symbol_data[symbol].append(data)
         self.events.put(MarketEvent())
 
 # %%

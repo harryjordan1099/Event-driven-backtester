@@ -27,4 +27,12 @@ events = queue.Queue()
 test_data_handler = HistoricCSVDataHandler(events, "/notebooks/Event-driven-backtester/data", ["BTC-USD"])
 
 # %%
-gen = test_data_handler._get_new_bar("BTC-USD")
+test_data_handler._get_new_bar("BTC-USD")
+
+# %%
+test_data_handler.get_latest_bars("BTC-USD")
+
+# %%
+test_data_handler.update_bars()
+
+# %%
