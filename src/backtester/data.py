@@ -1,5 +1,4 @@
 # %%
-import datetime
 import os, os.path 
 import pandas as pd
 
@@ -25,7 +24,7 @@ class DataHandler(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get_latest_bars(self, symbol, N=1):
+    def get_latest_data(self, symbol, N=1):
         '''
         Returns the N last or fewer bars from the latest_symbol list, 
         or fewer if less bars are available
@@ -37,7 +36,7 @@ class DataHandler(object):
         raise NotImplementedError('DataHandler child must implement a get_latest_bar() method')
     
     @abstractmethod
-    def update_bars(self):
+    def update_latest_data(self):
         '''
         Pushes the latest bar to the latestes symbol structure for all symbols in the symbol list
         '''

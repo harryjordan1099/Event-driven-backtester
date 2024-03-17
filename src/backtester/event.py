@@ -23,7 +23,7 @@ class SignalEvent(Event):
     This Event corresponds to sending a signal from a Strategy object to a Portfolio object and then acted upon.
     """
 
-    def __init__(self, symbol, datetime, signal_type, quantity):
+    def __init__(self, symbol, datetime, signal_type):
         """
         Initialises the SignalEvent.
 
@@ -31,14 +31,12 @@ class SignalEvent(Event):
             symbol (str) - The ticker symbol e.g. 'GOOG'
             datetime - The timestamp at which the signal was generated
             signal_type (str) - 'LONG' or 'SHORT'
-            quantity (int) - Non negative integer for quantity.
         """
 
         self.type = "SIGNAL"
         self.symbol = symbol
         self.datetime = datetime
         self.signal_type = signal_type
-        self.quantity = quantity
 
 
 class OrderEvent(Event):
